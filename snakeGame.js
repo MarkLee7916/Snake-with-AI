@@ -11,6 +11,7 @@ const DOWN = [1, 0];
 
 const snake = createSnake();
 const goal = createGoal();
+const delayWrapper = createDelayWrapper();
 
 initialiseGame();
 
@@ -53,11 +54,11 @@ function getMoveFromPath(pathAsMap) {
 }
 
 function generateDefaultMove(move) {
-	if (!snake.hasSnake(addCoordinates(move, UP))) {
+	if (!snake.hasSnake(wrapAround(addCoordinates(move, UP)))) {
 		return UP;
-	} else if (!snake.hasSnake(addCoordinates(move, LEFT))) {
+	} else if (!snake.hasSnake(wrapAround(addCoordinates(move, LEFT)))) {
 		return LEFT;
-	} else if (!snake.hasSnake(addCoordinates(move, RIGHT))) {
+	} else if (!snake.hasSnake(wrapAround(addCoordinates(move, RIGHT)))) {
 		return RIGHT;
 	} else {
 		return DOWN;
@@ -66,6 +67,20 @@ function generateDefaultMove(move) {
 
 function reverseDirection(coordinate) {
 	return coordinate.map(elem => elem * -1);
+}
+
+function createDelayWrapper() {
+	var delayTime = 40;
+
+	return {
+		setDelayTime(time) {
+			delayTime = time;
+		},
+
+		getDelayTime() {
+			return delayTime;
+		}
+	}
 }
 
 function bestFirstSearch(startingPos) {
@@ -90,11 +105,13 @@ function bestFirstSearch(startingPos) {
 			}
 		});
 
-		if (goal.isGoal(currentPos)) {
+		if (goal.isGoal(currentPos)) {	
+			delayWrapper.setDelayTime(30);
 			return path;
 		}
 	}
 
+	delayWrapper.setDelayTime(1);
 	return path;
 }
 
@@ -129,7 +146,7 @@ function generateNeighbours(coordinate) {
 
 	return neighbours;
 }
-	
+
 function addGlobalEventListeners() {
 	document.addEventListener("keydown", dealWithKeyPress);
 	document.querySelector("#reset").addEventListener("click", refreshBrowser);
@@ -172,11 +189,7 @@ async function runGame() {
 
 	while (running) {
 		if (!paused) {
-			if (isAIRunning) {
-				move = getNextAIMove(snake.head());
-				snake.changeDirection(move);
-			}
-
+			dealWithPotentialAIMove(isAIRunning);
 			snake.moveOneStep();
 			handleGoalCapture();
 			paintGridInDOM();	
@@ -218,6 +231,16 @@ async function runGame() {
 	}
 }
 
+function dealWithPotentialAIMove(isAIRunning) {
+	if (isAIRunning) {
+		move = getNextAIMove(snake.head());
+		snake.changeDirection(move);
+	}
+	else {
+		delayWrapper.setDelayTime(40);
+	}
+}
+
 function addLocalClickListenersForRunGame(toggleAI, pause) {
 	document.querySelector("#toggle-ai").addEventListener("click", toggleAI);
 	document.querySelector("#pause").addEventListener("click", pause);
@@ -238,9 +261,9 @@ function handleGoalCapture() {
 	}
 }
 
-function delay() {
+function delay(time) {
 	return new Promise(resolve => {
-		setTimeout(resolve, 40);
+		setTimeout(resolve, delayWrapper.getDelayTime());
 	});
 }
 
@@ -332,6 +355,7 @@ function wrapAround([row, col]) {
 	return [row, col];
 }
 
+// CHANGE TO MATH.RANDOM WHEN RELEASING
 // Generates a random integer whose value lies between lower and upper
 function randomIntBetween(lower, upper) {
 	return Math.floor(Math.random() * (upper - lower)) + lower;
