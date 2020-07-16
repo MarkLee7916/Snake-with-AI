@@ -355,7 +355,6 @@ function wrapAround([row, col]) {
 	return [row, col];
 }
 
-// CHANGE TO MATH.RANDOM WHEN RELEASING
 // Generates a random integer whose value lies between lower and upper
 function randomIntBetween(lower, upper) {
 	return Math.floor(Math.random() * (upper - lower)) + lower;
