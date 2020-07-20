@@ -1,23 +1,44 @@
-"use-strict";
-
 function createPriorityQueue(comparator) {
 	var heap = [];
 	var size = 0;
-	var cmp = comparator;
+	var compare = comparator;
+
+	function leftChild(curr) {
+		return 2 * curr + 1;
+	}
+
+	function rightChild(curr) {
+		return 2 * curr + 2;
+	}
+
+	function parent(curr) {
+		return Math.floor((curr + 1) / 2) - 1;
+	}
+
+	function isValidLeftChild(curr) {
+		return leftChild(curr) < size && compare(heap[curr], heap[leftChild(curr)]) > 0;
+	}
+
+	function isValidRightChild(curr) {
+		return rightChild(curr) < size && compare(heap[curr], heap[rightChild(curr)]) > 0;
+	}
+
+	function isValidParent(curr) {
+		return curr > 0 && compare(heap[curr], heap[parent(curr)]) < 0
+	}
 
 	function floatDown() {
 		var curr = 0;
 		var min;
 
-		while ((curr * 2 + 1 < size && (cmp(heap[curr], heap[curr * 2 + 1]) > 0) 
-		    || (curr * 2 + 2 < size  && cmp(heap[curr], heap[curr * 2 + 2]) > 0))) {
-			let left = curr * 2 + 1;
-			let right = curr * 2 + 2;
-
+		while (isValidLeftChild(curr) || isValidRightChild(curr)) {
+			let left = leftChild(curr);
+			let right = rightChild(curr);
+			
 			if (right >= size) {
 				min = left;
 			} else {
-				if (cmp(heap[left], heap[right]) < 0) {
+				if (compare(heap[left], heap[right]) < 0) {
 					min = left;
 				}
 				else {
@@ -33,9 +54,11 @@ function createPriorityQueue(comparator) {
 	function floatUp() {
 		var curr = size - 1; 
 
-		while (curr > 0 && cmp(heap[curr], heap[Math.floor((curr + 1) / 2) - 1]) < 0) {
-			swap(curr, Math.floor((curr + 1) / 2) - 1);
-			curr = Math.floor((curr + 1) / 2) - 1;
+		while (isValidParent(curr)) {
+			let parentNode = parent(curr);
+
+			swap(curr, parentNode);
+			curr = parentNode;
 		}
 	}
 
