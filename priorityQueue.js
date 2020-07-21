@@ -1,3 +1,5 @@
+"use-strict";
+
 function createPriorityQueue(comparator) {
 	var heap = [];
 	var size = 0;
